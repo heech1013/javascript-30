@@ -62,7 +62,7 @@
 			<audio data-key="76" src="sounds/tink.wav"></audio>
 		
 		<script>
-			window.addEventListener('keydown', function(e) {
+			function playSound(e) {
 				/*
 					select one -> querySelector()
 					select several -> querySelectorAll()
@@ -70,11 +70,46 @@
 					querySelector() return Element which matches provided selector.
 				*/
 				const audio = document.querySelector(`audio[data-key="${e.keyCode}"]`)
+				const key = document.querySelector(`.key[data-key="${e.keyCode}"]`)
 				if (!audio) return // stop the function from running all together.
 				
 				audio.currentTime = 0 // rewind to the start.
 				audio.play()
-			})
+
+				/*
+					Element.classList : readOnly list of class of element.
+					but the classes can be changed by .add(), .remove(), .toggle().
+				*/
+				key.classList.add('playing')
+
+				/*
+					eliminate effect on 'playing' - BAD EXAMPLE
+
+					...
+					setTimeout(() => {
+						key.classList.remove('playing')
+					}, 0.07)
+					...
+
+					it is BAD because it has to be sync with 0.07 at .css file.
+					GOOD EXAMPLE is add event that fires when element's animation(in this case, transition) is end.
+				*/
+			}
+			
+			function removeTransition(e) {
+				if (e.propertyName !== 'transform') return // skip it's not a transform.
+				/*
+				what is 'this' on here?
+				'this' is always whatever got called against it. addEventListener got called by 'key'!
+				*/
+				this.classList.remove('playing')
+			}
+			
+			const keys = document.querySelectorAll('.key')
+			// second parameter of addEventListener - event callback take 'e' automatically.
+			keys.forEach(key => key.addEventListener('transitionend', removeTransition))
+			
+			window.addEventListener('keydown', playSound)
 		</script>
 	</div>
 </body>
